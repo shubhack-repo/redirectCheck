@@ -49,11 +49,11 @@ func redirectScan(link string,fuzz_url string){
 		var pg sync.WaitGroup
 		for p := range payloads{
 			pg.Add(1)
-			go func(link string){
+			go func(link string,main_u string){
 				pay_url := strings.Replace(link,"INJECT",payloads[p],1)
-				CheckRedirect(pay_url)
+				CheckRedirect(pay_url,main_u)
 				pg.Done()
-			}(nu)
+			}(nu,link)
 		}
 		pg.Wait()
 
@@ -61,7 +61,9 @@ func redirectScan(link string,fuzz_url string){
 	}
 }
 
-func CheckRedirect(uri string){
+func CheckRedirect(uri string,link string){
+	colorGreen := "\033[32m"
+	colorReset := "\033[0m"
 	c := newClient()
 	req,err := http.NewRequest("GET",uri,nil)
 	if err != nil {
@@ -73,8 +75,15 @@ func CheckRedirect(uri string){
 	}
 	if resp.StatusCode == 302 {
 		location := resp.Header.Get("Location")
-		if strings.Contains(location,"google.com") || strings.Contains(location,"example.com"){
-			fmt.Println("Redirection 302 at",uri,"to:",location)
+		u,err := url.Parse(location)
+		if err != nil {
+			return
+		}
+		redirect_subd := u.Host
+		mu,_ := url.Parse(link)
+		link_subd := mu.Host
+		if strings.Contains(redirect_subd,"google.com") || strings.Contains(redirect_subd,"example.com") || !(link_subd==redirect_subd) {
+			fmt.Println("Redirection 302 at",uri,"to:",string(colorGreen),location,string(colorReset))
 			return
 		}
 		return
