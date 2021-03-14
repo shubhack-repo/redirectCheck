@@ -83,7 +83,7 @@ func CheckRedirect(uri string,link string){
 		redirect_subd := u.Domain + "." + u.TLD
 		mu,_ := tld.Parse(link)
 		link_subd := mu.Domain + "." + mu.TLD
-		if redirect_subd != link_subd {
+		if redirect_subd != link_subd && redirect_subd != "" {
 			fmt.Println("Redirection 302 at",uri,"to:",string(colorGreen),location,string(colorReset))
 			return
 		}
